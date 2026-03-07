@@ -1,0 +1,43 @@
+
+# Xcode build output
+DerivedData/
+build/
+
+# Xcode user-specific files
+*.xcuserstate
+xcuserdata/
+
+# Xcode workspace (uncomment ONLY if using CocoaPods)
+# *.xcworkspace
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Carthage
+Carthage/Build/
+Carthage/Checkouts/
+
+# Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Archives and profiles
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.mobileprovision
+
+# Logs
+*.log
