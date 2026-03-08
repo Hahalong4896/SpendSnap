@@ -24,6 +24,9 @@ final class ExpenseEntryViewModel {
     var didSaveSuccessfully = false
     var currency: String = "SGD"
     
+    var locationCity: String?
+    var locationCountry: String?
+    
     // MARK: - Validation
     
     /// Whether the form has enough data to save
@@ -63,7 +66,9 @@ final class ExpenseEntryViewModel {
                 vendor: vendor.isEmpty ? nil : vendor,
                 note: note.isEmpty ? nil : note,
                 photoFileName: fileName,
-                date: expenseDate
+                date: expenseDate,
+                locationCity: locationCity,
+                locationCountry: locationCountry
             )
             
             // 3. Save to SwiftData
@@ -92,5 +97,16 @@ final class ExpenseEntryViewModel {
         vendor = ""
         expenseDate = Date()
         didSaveSuccessfully = false
+        locationCity = nil
+        locationCountry = nil
+    }
+    
+    /// Auto-detect current location
+    func detectLocation() {
+        LocationService.shared.detectLocation { [weak self] city, country in
+            self?.locationCity = city
+            self?.locationCountry = country
+        }
     }
 }
+

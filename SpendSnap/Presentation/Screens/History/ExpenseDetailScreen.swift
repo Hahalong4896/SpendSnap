@@ -82,6 +82,11 @@ struct ExpenseDetailScreen: View {
                         detailRow(label: "Notes", value: note)
                         Divider().padding(.horizontal)
                     }
+                
+                    if let location = expense.locationDisplay {
+                        Divider().padding(.horizontal)
+                        detailRow(label: "Location", value: location)
+                    }
                     
                     detailRow(label: "Currency", value: expense.currency)
                     

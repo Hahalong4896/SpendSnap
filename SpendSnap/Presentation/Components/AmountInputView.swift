@@ -104,11 +104,7 @@ struct AmountInputView: View {
             .frame(maxWidth: .infinity)
         }
         .padding(.vertical, 16)
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                isFieldFocused = true
-            }
-        }
+       
         .sheet(isPresented: $showCurrencyPicker) {
             CurrencyPickerSheet(selectedCurrency: $selectedCurrency)
                 .presentationDetents([.medium])

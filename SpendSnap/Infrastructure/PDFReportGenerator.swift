@@ -541,6 +541,16 @@ struct PDFReportGenerator {
                 if !detail.isEmpty {
                     detail.draw(at: CGPoint(x: textX, y: y + 18), withAttributes: smallAttrs)
                 }
+
+                // Location
+                if let location = expense.locationDisplay {
+                    let locAttrs: [NSAttributedString.Key: Any] = [
+                        .font: UIFont.systemFont(ofSize: 8),
+                        .foregroundColor: UIColor.gray
+                    ]
+                    let locStr = "📍 \(location)"
+                    locStr.draw(at: CGPoint(x: textX, y: y + (detail.isEmpty ? 18 : 30)), withAttributes: locAttrs)
+                }
                 
                
                 

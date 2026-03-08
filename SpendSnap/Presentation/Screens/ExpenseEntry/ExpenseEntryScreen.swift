@@ -28,16 +28,26 @@ struct ExpenseEntryScreen: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    
-                    // ── Photo Section ──
-                    photoSection
-                    
-                    if !showCamera || viewModel.capturedImage != nil || !showCamera {
-                        // Only show form when camera is dismissed
+            ScrollViewReader { scrollProxy in
+                ScrollView {
+                    VStack(spacing: 20) {
+                        
+                        // ── Photo Section ──
+                        photoSection
+                        
                         if !showCamera {
                             formSection
+                                .id("formSection")
+                            
+                            
+                        }
+                    }
+                }
+                .onChange(of: viewModel.selectedCategory) { _, newCategory in
+                    if newCategory != nil {
+                        // Auto-scroll to amount when category is selected
+                        withAnimation {
+                            scrollProxy.scrollTo("amountSection", anchor: .top)
                         }
                     }
                 }
@@ -62,6 +72,7 @@ struct ExpenseEntryScreen: View {
                     viewModel.capturedImage = image
                     showCamera = false
                     cameraService.stopSession()
+                    viewModel.detectLocation()
                 }
             }
             .onChange(of: selectedPhotoItem) { _, newItem in
@@ -70,7 +81,6 @@ struct ExpenseEntryScreen: View {
             .photosPicker(isPresented: $showImagePicker,
                          selection: $selectedPhotoItem,
                          matching: .images)
-          
             .onDisappear {
                 cameraService.stopSession()
             }
@@ -217,6 +227,27 @@ struct ExpenseEntryScreen: View {
     
     private var formSection: some View {
         VStack(spacing: 20) {
+           
+
+            // Location (auto-detected)
+            HStack {
+                Image(systemName: "location.fill")
+                    .foregroundStyle(.blue)
+                    .font(.caption)
+                if let city = viewModel.locationCity {
+                    let country = viewModel.locationCountry ?? ""
+                    Text("\(city)\(country.isEmpty ? "" : ", \(country)")")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Detecting location...")
+                        .font(.subheadline)
+                        .foregroundStyle(.tertiary)
+                }
+                Spacer()
+            }
+            .padding(.top, 4)
+            
             // ── Category Selection ──
             VStack(alignment: .leading, spacing: 8) {
                 sectionLabel("Category")
@@ -230,16 +261,27 @@ struct ExpenseEntryScreen: View {
                 AmountInputView(amount: $viewModel.amountString, selectedCurrency: $selectedCurrency)
             }
             .padding(.horizontal)
+            .id("amountSection")
+            
+            
             
             // ── Optional Fields ──
             VStack(alignment: .leading, spacing: 8) {
                 sectionLabel("Details (Optional)")
                 
                 TextField("Vendor / Shop name", text: $viewModel.vendor)
-                    .textFieldStyle(.roundedBorder)
-                
+                    .font(.body)
+                    .padding(14)
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.systemGray4), lineWidth: 0.5))
+
                 TextField("Notes", text: $viewModel.note)
-                    .textFieldStyle(.roundedBorder)
+                    .font(.body)
+                    .padding(14)
+                    .background(Color(.systemGray6))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.systemGray4), lineWidth: 0.5))
                 
                 DatePicker("Date", selection: $viewModel.expenseDate, displayedComponents: .date)
             }
@@ -263,6 +305,8 @@ struct ExpenseEntryScreen: View {
                 .background(canSave ? Color.blue : Color.gray.opacity(0.4))
                 .clipShape(RoundedRectangle(cornerRadius: 14))
             }
+            
+            
             .disabled(!canSave || viewModel.isSaving)
             .padding(.horizontal)
             .padding(.bottom, 30)
@@ -290,6 +334,7 @@ struct ExpenseEntryScreen: View {
     
     private func capturePhoto() {
         cameraService.capturePhoto()
+        viewModel.detectLocation()
     }
     
     private func retakePhoto() {
@@ -310,6 +355,7 @@ struct ExpenseEntryScreen: View {
     private func skipPhoto() {
         showCamera = false
         cameraService.stopSession()
+        viewModel.detectLocation()
         // No image — user will enter expense without photo
     }
     
@@ -321,6 +367,7 @@ struct ExpenseEntryScreen: View {
                 await MainActor.run {
                     viewModel.capturedImage = image
                     showCamera = false
+                    viewModel.detectLocation()
                     cameraService.stopSession()
                 }
             }

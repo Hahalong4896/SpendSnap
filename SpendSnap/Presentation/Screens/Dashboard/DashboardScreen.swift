@@ -130,10 +130,11 @@ struct DashboardScreen: View {
                     // ── Recent Expenses ──
                     recentExpensesSection
                 }
-                .padding(.top)
+                .padding(.top, 8)
                 .padding(.bottom, 20)
             }
             .navigationTitle("SpendSnap")
+            .navigationBarTitleDisplayMode(.large)
         }
     }
     
@@ -293,6 +294,17 @@ struct ExpenseRow: View {
                     Text(expense.date, style: .date)
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                }
+                
+                // Location
+                if let location = expense.locationDisplay {
+                    HStack(spacing: 3) {
+                        Image(systemName: "location.fill")
+                            .font(.system(size: 8))
+                        Text(location)
+                            .font(.caption2)
+                    }
+                    .foregroundStyle(.tertiary)
                 }
             }
             

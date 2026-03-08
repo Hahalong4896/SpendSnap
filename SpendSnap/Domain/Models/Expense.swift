@@ -32,6 +32,14 @@ final class Expense {
         set { syncStatus = newValue.rawValue }
     }
     
+    /// Formatted location string (e.g. "Kuala Lumpur, MY")
+    var locationDisplay: String? {
+        guard let city = locationCity, !city.isEmpty else { return nil }
+        if let country = locationCountry, !country.isEmpty {
+            return "\(city), \(country)"
+        }
+        return city
+    }
     // MARK: - Init
     
     init(
@@ -45,7 +53,11 @@ final class Expense {
         date: Date = Date(),
         createdAt: Date = Date(),
         updatedAt: Date = Date(),
+        // Add to init parameters:
+        locationCity: String? = nil,
+        locationCountry: String? = nil,
         syncStatus: SyncStatus = .local
+        
     ) {
         self.id = id
         self.amount = amount
@@ -58,5 +70,13 @@ final class Expense {
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.syncStatus = syncStatus.rawValue
+        self.locationCity = locationCity
+        self.locationCountry = locationCountry
     }
+    
+    // Add these alongside the other properties:
+    var locationCity: String?
+    var locationCountry: String?
 }
+
+    
