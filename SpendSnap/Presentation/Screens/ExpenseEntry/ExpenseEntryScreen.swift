@@ -23,6 +23,17 @@ struct ExpenseEntryScreen: View {
     @State private var showImagePicker = false
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var selectedCurrency: Currency = .sgd
+    @Query(
+    filter: #Predicate<ExpenseGroup> { $0.groupType == "daily" && $0.isVisible },
+    sort: \ExpenseGroup.sortOrder
+    ) private var dailyGroups: [ExpenseGroup]
+    
+    @Query(
+    filter: #Predicate<PaymentSource> { $0.isActive },
+    sort: \PaymentSource.sortOrder
+    ) private var paymentSources: [PaymentSource]
+    
+    @State private var selectedPaymentSource: PaymentSource?
     
     // MARK: - Body
     
@@ -83,6 +94,15 @@ struct ExpenseEntryScreen: View {
                          matching: .images)
             .onDisappear {
                 cameraService.stopSession()
+            }
+            
+            .onAppear {
+            // Auto-select default payment source from Daily Expense group
+            if selectedPaymentSource == nil,
+            let dailyGroup = dailyGroups.first,
+            let sourceID = dailyGroup.defaultPaymentSourceID {
+            selectedPaymentSource = paymentSources.first { $0.id.uuidString == sourceID }
+            }
             }
         }
     }
@@ -267,6 +287,18 @@ struct ExpenseEntryScreen: View {
             
             // ── Optional Fields ──
             VStack(alignment: .leading, spacing: 8) {
+                // ── Payment Source ──
+                if !paymentSources.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                sectionLabel("Paid Via")
+                PaymentSourcePicker(
+                sources: paymentSources,
+                selected: $selectedPaymentSource
+                )
+                }
+                .padding(.horizontal)
+                }
+                
                 sectionLabel("Details (Optional)")
                 
                 TextField("Vendor / Shop name", text: $viewModel.vendor)
@@ -375,7 +407,10 @@ struct ExpenseEntryScreen: View {
     }
     
     private func save() {
+        
         viewModel.currency = selectedCurrency.rawValue
+        viewModel.selectedPaymentSource = selectedPaymentSource 
         viewModel.saveExpense(modelContext: modelContext)
+        
     }
 }

@@ -1,10 +1,11 @@
-// Presentation/Navigation/TabBarView.swift
+// Presentation/Navigation/TabBarView.swift 
 // SpendSnap
 
 import SwiftUI
 
 /// Main tab bar navigation for the app.
-/// Centre tab opens expense entry as a full-screen sheet.
+/// Phase 2.5: Budget tab replaces Reports tab position.
+/// Reports functionality is now inside the Budget screen.
 struct TabBarView: View {
     
     // MARK: - State
@@ -17,8 +18,8 @@ struct TabBarView: View {
     enum Tab: Int {
         case dashboard
         case history
-        case add       // Dummy tab — triggers sheet
-        case reports
+        case add        // Dummy tab — triggers sheet
+        case budget     // NEW: Monthly budget workspace
         case settings
     }
     
@@ -46,11 +47,11 @@ struct TabBarView: View {
                 }
                 .tag(Tab.add)
             
-            MonthlyReportScreen()
+            MonthlyBudgetScreen()
                 .tabItem {
-                    Label("Reports", systemImage: "doc.text.fill")
+                    Label("Budget", systemImage: "wallet.bifold.fill")
                 }
-                .tag(Tab.reports)
+                .tag(Tab.budget)
             
             SettingsScreen()
                 .tabItem {

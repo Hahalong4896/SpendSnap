@@ -1,4 +1,4 @@
-// App/SpendSnapApp.swift
+// App/SpendSnapApp.swift — FULL REPLACEMENT
 // SpendSnap
 
 import SwiftUI
@@ -14,32 +14,35 @@ struct SpendSnapApp: App {
     init() {
         do {
             let schema = Schema([
+                // Phase 1-2 models
                 Expense.self,
                 Category.self,
                 MonthlyReport.self,
+                // Phase 2.5 models
+                PaymentSource.self,
+                ExpenseGroup.self,
+                RecurringTemplate.self,
+                MonthlyBudget.self,
+                IncomeEntry.self,
+                MonthlyExpenseEntry.self,
             ])
             let config = ModelConfiguration(
                 schema: schema,
-                isStoredInMemoryOnly: false  // Persist to disk
+                isStoredInMemoryOnly: false
             )
             modelContainer = try ModelContainer(
                 for: schema,
                 configurations: [config]
             )
             
-            // Seed default categories on first launch
+            // Seed defaults on first launch
             let context = ModelContext(modelContainer)
             CategorySeeder.seedIfNeeded(context: context)
+            ExpenseGroupSeeder.seedIfNeeded(context: context)
             
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
-        
-        // Request notification permission
-        NotificationService.requestPermission()
-
-        // Schedule monthly report reminder
-        NotificationService.scheduleMonthlyReportReminder()
     }
     
     // MARK: - Body

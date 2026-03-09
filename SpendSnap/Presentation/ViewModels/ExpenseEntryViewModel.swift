@@ -27,6 +27,8 @@ final class ExpenseEntryViewModel {
     var locationCity: String?
     var locationCountry: String?
     
+    var selectedPaymentSource: PaymentSource?
+    
     // MARK: - Validation
     
     /// Whether the form has enough data to save
@@ -71,11 +73,14 @@ final class ExpenseEntryViewModel {
                 locationCountry: locationCountry
             )
             
-            // 3. Save to SwiftData
+            // 3. Assign payment source (AFTER creating the expense, not inside the init)
+            expense.paymentSource = selectedPaymentSource
+            
+            // 4. Save to SwiftData
             let repository = ExpenseRepository(modelContext: modelContext)
             try repository.saveExpense(expense)
             
-            // 4. Success
+            // 5. Success
             didSaveSuccessfully = true
             
         } catch {
@@ -99,6 +104,7 @@ final class ExpenseEntryViewModel {
         didSaveSuccessfully = false
         locationCity = nil
         locationCountry = nil
+        selectedPaymentSource = nil
     }
     
     /// Auto-detect current location
@@ -109,4 +115,3 @@ final class ExpenseEntryViewModel {
         }
     }
 }
-

@@ -21,8 +21,9 @@ final class Expense {
     var syncStatus: String        // SyncStatus raw value (SwiftData doesn't support enums directly)
     
     // MARK: - Relationships
-    
+
     var category: Category?
+    var paymentSource: PaymentSource?
     
     // MARK: - Computed Properties
     

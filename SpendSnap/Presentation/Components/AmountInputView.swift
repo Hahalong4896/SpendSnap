@@ -3,58 +3,8 @@
 
 import SwiftUI
 
-/// Available currencies for expense tracking.
-enum Currency: String, CaseIterable, Identifiable {
-    case sgd = "SGD"
-    case myr = "MYR"
-    case thb = "THB"
-    case jpy = "JPY"
-    case eur = "EUR"
-    case usd = "USD"
-    case gbp = "GBP"
-    case cny = "CNY"
-    
-    var id: String { rawValue }
-    
-    var symbol: String {
-        switch self {
-        case .sgd: return "S$"
-        case .myr: return "RM"
-        case .thb: return "฿"
-        case .jpy: return "¥"
-        case .eur: return "€"
-        case .usd: return "$"
-        case .gbp: return "£"
-        case .cny: return "¥"
-        }
-    }
-    
-    var name: String {
-        switch self {
-        case .sgd: return "Singapore Dollar"
-        case .myr: return "Malaysian Ringgit"
-        case .thb: return "Thai Baht"
-        case .jpy: return "Japanese Yen"
-        case .eur: return "Euro"
-        case .usd: return "US Dollar"
-        case .gbp: return "British Pound"
-        case .cny: return "Chinese Yuan"
-        }
-    }
-    
-    var flag: String {
-        switch self {
-        case .sgd: return "🇸🇬"
-        case .myr: return "🇲🇾"
-        case .thb: return "🇹🇭"
-        case .jpy: return "🇯🇵"
-        case .eur: return "🇪🇺"
-        case .usd: return "🇺🇸"
-        case .gbp: return "🇬🇧"
-        case .cny: return "🇨🇳"
-        }
-    }
-}
+// NOTE: Currency enum has been moved to Domain/Models/Currency+Helpers.swift
+// Do NOT define it here — it lives in Currency+Helpers.swift as the single source of truth.
 
 /// Custom amount input field with currency selector.
 struct AmountInputView: View {

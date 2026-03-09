@@ -24,6 +24,20 @@ struct SettingsScreen: View {
     var body: some View {
         NavigationStack {
             List {
+                // ── Financial Setup ──
+                Section("Financial Setup") {
+                NavigationLink(destination: PaymentSourceScreen()) {
+                Label("Payment Sources", systemImage: "building.columns")
+                }
+                
+                NavigationLink(destination: ExpenseGroupScreen()) {
+                Label("Expense Groups", systemImage: "folder.fill")
+                }
+                
+                NavigationLink(destination: RecurringTemplateScreen()) {
+                Label("Recurring Templates", systemImage: "doc.text.below.ecg")
+                }
+                }
                 // ── App Info ──
                 Section("About") {
                     HStack {
