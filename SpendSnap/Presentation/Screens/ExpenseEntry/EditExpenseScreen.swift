@@ -5,15 +5,10 @@ import SwiftUI
 import SwiftData
 
 /// Screen for editing an existing expense's details.
-/// Photo cannot be changed — only category, amount, notes, vendor, and date.
 struct EditExpenseScreen: View {
-    
-    // MARK: - Environment
     
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
-    
-    // MARK: - Properties
     
     let expense: Expense
     
@@ -25,8 +20,12 @@ struct EditExpenseScreen: View {
     @State private var showError = false
     @State private var errorMessage = ""
     @State private var selectedCurrency: Currency = .sgd
+    @State private var selectedPaymentSource: PaymentSource?
     
-    // MARK: - Body
+    @Query(
+        filter: #Predicate<PaymentSource> { $0.isActive },
+        sort: \PaymentSource.sortOrder
+    ) private var paymentSources: [PaymentSource]
     
     var body: some View {
         NavigationStack {
@@ -45,37 +44,47 @@ struct EditExpenseScreen: View {
                     
                     // ── Category ──
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Category")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.secondary)
+                        sectionLabel("Category")
                         CategoryGridView(selectedCategory: $selectedCategory)
                     }
                     .padding(.horizontal)
                     
                     // ── Amount ──
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Amount")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.secondary)
+                        sectionLabel("Amount")
                         AmountInputView(amount: $amountString, selectedCurrency: $selectedCurrency)
-
                     }
                     .padding(.horizontal)
                     
+                    // ── Payment Source ──
+                    if !paymentSources.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            sectionLabel("Paid Via")
+                            PaymentSourcePicker(
+                                sources: paymentSources,
+                                selected: $selectedPaymentSource
+                            )
+                        }
+                        .padding(.horizontal)
+                    }
+                    
                     // ── Details ──
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Details")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.secondary)
+                        sectionLabel("Details")
                         
                         TextField("Vendor / Shop name", text: $vendor)
-                            .textFieldStyle(.roundedBorder)
+                            .font(.body)
+                            .padding(14)
+                            .background(Color(.systemGray6))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.systemGray4), lineWidth: 0.5))
                         
                         TextField("Notes", text: $note)
-                            .textFieldStyle(.roundedBorder)
+                            .font(.body)
+                            .padding(14)
+                            .background(Color(.systemGray6))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(.systemGray4), lineWidth: 0.5))
                         
                         DatePicker("Date", selection: $expenseDate, displayedComponents: .date)
                     }
@@ -104,13 +113,13 @@ struct EditExpenseScreen: View {
                 }
             }
             .onAppear {
-                // Pre-fill with existing data
                 selectedCategory = expense.category
-                amountString = "\(NSDecimalNumber(decimal: expense.amount).doubleValue)"
+                amountString = formatDecimal(expense.amount)
                 vendor = expense.vendor ?? ""
                 note = expense.note ?? ""
                 expenseDate = expense.date
                 selectedCurrency = Currency(rawValue: expense.currency) ?? .sgd
+                selectedPaymentSource = expense.paymentSource
             }
             .alert("Error", isPresented: $showError) {
                 Button("OK") { }
@@ -120,7 +129,7 @@ struct EditExpenseScreen: View {
         }
     }
     
-    // MARK: - Validation
+    // MARK: - Helpers
     
     private var canSave: Bool {
         selectedCategory != nil
@@ -128,10 +137,27 @@ struct EditExpenseScreen: View {
         && (Decimal(string: amountString) ?? 0) > 0
     }
     
+    private func sectionLabel(_ text: String) -> some View {
+        Text(text)
+            .font(.subheadline)
+            .fontWeight(.semibold)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 4)
+    }
+    
+    /// Formats Decimal cleanly without floating point artifacts
+    private func formatDecimal(_ value: Decimal) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 0
+        formatter.groupingSeparator = ""
+        return formatter.string(from: NSDecimalNumber(decimal: value)) ?? "0"
+    }
+    
     // MARK: - Save
     
     private func saveChanges() {
-        expense.currency = selectedCurrency.rawValue
         guard let category = selectedCategory,
               let amount = Decimal(string: amountString) else {
             errorMessage = "Please fill in all required fields."
@@ -141,9 +167,11 @@ struct EditExpenseScreen: View {
         
         expense.category = category
         expense.amount = amount
+        expense.currency = selectedCurrency.rawValue
         expense.vendor = vendor.isEmpty ? nil : vendor
         expense.note = note.isEmpty ? nil : note
         expense.date = expenseDate
+        expense.paymentSource = selectedPaymentSource
         expense.updatedAt = Date()
         
         do {

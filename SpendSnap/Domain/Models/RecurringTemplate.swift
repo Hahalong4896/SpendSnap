@@ -5,37 +5,26 @@ import Foundation
 import SwiftData
 
 /// Template for a fixed monthly expense.
-/// Configured once, auto-populated into each month's budget workspace.
-///
-/// Example: "Rent Installment" = RM2,500/month via TransferWise under Housing group
-///
-/// The template-to-instance pattern:
-/// 1. User creates template (once)
-/// 2. MonthlyBudgetService creates MonthlyExpenseEntry instances each month
-/// 3. Instances copy defaultAmount but can be edited per-month
-/// 4. Editing an instance does NOT change the template
-///
+/// Phase 2.5b: Added costPerKm for vehicle maintenance calculation.
 @Model
 final class RecurringTemplate {
     
-    // MARK: - Properties
-    
     var id: UUID
-    var name: String                // Item name (e.g., "Electricity", "Car Insurance")
-    var defaultAmount: Decimal      // Default monthly amount
-    var currency: String            // Currency code (e.g., "SGD", "MYR")
-    var sortOrder: Int              // Display order within group
-    var isActive: Bool              // Active = included in monthly auto-population
-    var note: String?               // Optional description
+    var name: String
+    var defaultAmount: Decimal
+    var currency: String
+    var sortOrder: Int
+    var isActive: Bool
+    var note: String?
     var createdAt: Date
     
-    // MARK: - Relationships
-    // Using direct references (no inverse) per Phase 1 learning
+    /// Cost per km for maintenance calculation (e.g., 0.20).
+    /// When set, the template is treated as a mileage-based expense.
+    /// Monthly amount = costPerKm × total distance from petrol entries.
+    var costPerKm: Decimal?
     
     var expenseGroup: ExpenseGroup?
     var paymentSource: PaymentSource?
-    
-    // MARK: - Init
     
     init(
         id: UUID = UUID(),
@@ -47,6 +36,7 @@ final class RecurringTemplate {
         sortOrder: Int = 0,
         isActive: Bool = true,
         note: String? = nil,
+        costPerKm: Decimal? = nil,
         createdAt: Date = Date()
     ) {
         self.id = id
@@ -58,6 +48,7 @@ final class RecurringTemplate {
         self.sortOrder = sortOrder
         self.isActive = isActive
         self.note = note
+        self.costPerKm = costPerKm
         self.createdAt = createdAt
     }
 }

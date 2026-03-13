@@ -164,7 +164,8 @@ struct RecurringTemplateScreen: View {
             expenseGroup: data.group,
             paymentSource: data.source,
             sortOrder: templates.count,
-            note: data.note
+            note: data.note,
+            costPerKm: data.costPerKm    // ← add this
         )
         modelContext.insert(template)
         try? modelContext.save()
@@ -177,6 +178,7 @@ struct RecurringTemplateScreen: View {
         template.expenseGroup = data.group
         template.paymentSource = data.source
         template.note = data.note
+        template.costPerKm = data.costPerKm    // ← add this
         try? modelContext.save()
     }
     
@@ -197,6 +199,7 @@ struct TemplateFormData {
     var group: ExpenseGroup?
     var source: PaymentSource?
     var note: String?
+    var costPerKm: Decimal?
 }
 
 // MARK: - Template Form Sheet
@@ -216,6 +219,7 @@ struct RecurringTemplateFormSheet: View {
     @State private var selectedGroup: ExpenseGroup?
     @State private var selectedSource: PaymentSource?
     @State private var note = ""
+    @State private var costPerKmString = ""
     
     var body: some View {
         NavigationStack {
@@ -274,6 +278,21 @@ struct RecurringTemplateFormSheet: View {
                 Section("Note (Optional)") {
                     TextField("Optional note", text: $note)
                 }
+                
+                Section {
+                HStack {
+                Text("Cost per km")
+                Spacer()
+                TextField("e.g., 0.20", text: $costPerKmString)
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .frame(width: 100)
+                }
+                } header: {
+                Text("Mileage-Based Calculation")
+                } footer: {
+                Text("For maintenance: monthly cost = rate × distance from petrol entries. Leave empty for fixed amount.")
+                }
             }
             .navigationTitle(template == nil ? "Add Template" : "Edit Template")
             .navigationBarTitleDisplayMode(.inline)
@@ -290,7 +309,8 @@ struct RecurringTemplateFormSheet: View {
                             currency: selectedCurrency,
                             group: selectedGroup,
                             source: selectedSource,
-                            note: note.isEmpty ? nil : note
+                            note: note.isEmpty ? nil : note,
+                            costPerKm: Decimal(string: costPerKmString)
                         )
                         onSave(data)
                         dismiss()
@@ -306,8 +326,12 @@ struct RecurringTemplateFormSheet: View {
                     selectedGroup = t.expenseGroup
                     selectedSource = t.paymentSource
                     note = t.note ?? ""
+                    if let cpk = t.costPerKm {                              // ← add these
+                        costPerKmString = "\(NSDecimalNumber(decimal: cpk).doubleValue)"  // ← lines
+                    }
                 }
             }
+            
         }
     }
 }

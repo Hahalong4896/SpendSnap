@@ -5,11 +5,10 @@ import Foundation
 import SwiftData
 
 /// High-level expense grouping (e.g., Daily Expense, Housing, Transport).
-/// Maps to the major sections in a monthly financial spreadsheet.
 ///
-/// groupType determines behaviour:
-/// - "daily": Contains sub-categories, expenses captured ad-hoc (existing flow)
-/// - "recurring": Contains RecurringTemplates, auto-populated monthly
+/// groupType: "daily" or "recurring"
+/// hasItemisedEntries: If true, group supports frequent itemised entries
+/// (e.g., Transport/Petrol, Groceries) with receipt capture.
 ///
 @Model
 final class ExpenseGroup {
@@ -17,17 +16,18 @@ final class ExpenseGroup {
     // MARK: - Properties
     
     var id: UUID
-    var name: String                // Group name (e.g., "Housing", "Transport")
-    var icon: String                // SF Symbol name
-    var colorHex: String            // Theme colour
-    var sortOrder: Int              // Display order
-    var groupType: String           // "daily" or "recurring"
-    var isDefault: Bool             // System-provided vs user-created
-    var isVisible: Bool             // Allow hiding unused groups
-    
-    // MARK: - Optional default payment source for the group
-    // Stored as UUID string to avoid circular relationship issues
+    var name: String
+    var icon: String
+    var colorHex: String
+    var sortOrder: Int
+    var groupType: String
+    var isDefault: Bool
+    var isVisible: Bool
     var defaultPaymentSourceID: String?
+    
+    /// When true, group shows "Add Petrol" / "Add Grocery" style capture button
+    /// and displays itemised entries separately from fixed entries.
+    var hasItemisedEntries: Bool
     
     // MARK: - Init
     
@@ -40,7 +40,8 @@ final class ExpenseGroup {
         groupType: String = "recurring",
         isDefault: Bool = true,
         isVisible: Bool = true,
-        defaultPaymentSourceID: String? = nil
+        defaultPaymentSourceID: String? = nil,
+        hasItemisedEntries: Bool = false
     ) {
         self.id = id
         self.name = name
@@ -51,18 +52,18 @@ final class ExpenseGroup {
         self.isDefault = isDefault
         self.isVisible = isVisible
         self.defaultPaymentSourceID = defaultPaymentSourceID
+        self.hasItemisedEntries = hasItemisedEntries
     }
 }
 
-// MARK: - GroupType Enum (type-safe accessor)
+// MARK: - GroupType Enum
 
 enum ExpenseGroupType: String, Codable, CaseIterable {
-    case daily      // Ad-hoc expenses using existing Category system
-    case recurring  // Fixed monthly expenses using RecurringTemplate system
+    case daily
+    case recurring
 }
 
 extension ExpenseGroup {
-    /// Type-safe accessor for groupType
     var type: ExpenseGroupType {
         get { ExpenseGroupType(rawValue: groupType) ?? .recurring }
         set { groupType = newValue.rawValue }
